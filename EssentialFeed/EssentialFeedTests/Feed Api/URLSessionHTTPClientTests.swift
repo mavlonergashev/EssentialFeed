@@ -110,6 +110,7 @@ class URLSessionHTTPClientTests: XCTestCase {
                 
         private static var stub: Stub?
         private static var requestObserver: ((URLRequest) -> Void)?
+        private static var hasObservedRequest = false
         
         private struct Stub {
             let data: Data?
@@ -123,6 +124,7 @@ class URLSessionHTTPClientTests: XCTestCase {
         
         static func observeRequests(observer: @escaping (URLRequest) -> Void) {
             requestObserver = observer
+            hasObservedRequest = false
         }
         
         static func startInterceptingRequests() {
@@ -136,7 +138,10 @@ class URLSessionHTTPClientTests: XCTestCase {
         }
         
         override class func canInit(with request: URLRequest) -> Bool {
-            requestObserver?(request)
+            if let observer = requestObserver, !hasObservedRequest {
+                observer(request)
+                hasObservedRequest = true
+            }
             return true
         }
         
